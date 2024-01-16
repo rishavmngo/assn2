@@ -14,10 +14,3 @@
 | POST    | Login user       | /api/users/login       |
 | PUT     | Full update user | /api/users/update/{id} |
 | DELETE  | Delete a user    | /api/users/delete/{id} |
-
-## More things to implement
-
-1. TOKEN based authentication
-2. Implement DTOs
-3. More Error handling
-4. Optimize transactions
