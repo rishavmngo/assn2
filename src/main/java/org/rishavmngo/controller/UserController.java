@@ -7,10 +7,7 @@ import org.jboss.resteasy.reactive.RestResponse.ResponseBuilder;
 import org.rishavmngo.domain.UserEntity;
 import org.rishavmngo.repository.UserRepository;
 
-import com.unboundid.ldap.sdk.LDAPConnection;
-
 import jakarta.inject.Inject;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -21,10 +18,6 @@ import jakarta.ws.rs.core.Response;
 @Path("/api/users")
 public class UserController {
 
-    private static final String LDAP_SERVER_HOST = "localhost";
-    private static final int LDAP_SERVER_PORT = 3389;
-    private static final String LDAP_BIND_DN = "cn=Directory Manager";
-    private static final String LDAP_BIND_PASSWORD = "ldap@803101";
     @Inject
     UserRepository userRepository;
 
@@ -87,14 +80,14 @@ public class UserController {
     public RestResponse<String> Delete(@PathParam("id") Long id) {
 
         if (userRepository.getById(id).isEmpty()) {
-            userRepository.delete(id);
 
-            return ResponseBuilder.ok("User has been deleted")
+            return ResponseBuilder.ok("Failed to Delete no user exist!")
+                    .status(Response.Status.BAD_REQUEST)
                     .build();
         } else {
 
-            return ResponseBuilder.ok("Failed to Delete!")
-                    .status(Response.Status.BAD_REQUEST)
+            userRepository.delete(id);
+            return ResponseBuilder.ok("User has been deleted")
                     .build();
         }
     }
