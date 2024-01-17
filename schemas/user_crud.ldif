@@ -1,0 +1,16 @@
+dn: dc=user_crud,dc=com
+objectClass: top
+objectClass: domain
+dc: user_crud
+description: user database
+
+dn: ou=users,dc=user_crud,dc=com
+objectClass: organizationalUnit
+ou: users
+
+dn: mail=john.doe@gmail.com ,ou=users,dc=user_crud,dc=com
+objectClass: inetOrgPerson
+cn: John
+sn: Doe
+mail: john.doe@gmail.com
+userPassword: 1234567890

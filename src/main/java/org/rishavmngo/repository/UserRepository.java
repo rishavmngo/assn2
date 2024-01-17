@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.rishavmngo.domain.UserEntity;
 
 public interface UserRepository {
-
+	//
 	UserEntity create(UserEntity user);
 
 	Optional<UserEntity> getById(Long id);

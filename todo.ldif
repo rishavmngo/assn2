@@ -1,0 +1,5 @@
+dn: dc=todo_app,dc=com
+objectClass: top
+objectClass: domain
+dc: todo_app
+description: Todo database

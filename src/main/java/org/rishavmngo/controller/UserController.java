@@ -1,9 +1,13 @@
 package org.rishavmngo.controller;
 
+import java.util.Optional;
+
 import org.jboss.resteasy.reactive.RestResponse;
 import org.jboss.resteasy.reactive.RestResponse.ResponseBuilder;
 import org.rishavmngo.domain.UserEntity;
-import org.rishavmngo.service.UserService;
+import org.rishavmngo.repository.UserRepository;
+
+import com.unboundid.ldap.sdk.LDAPConnection;
 
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -17,21 +21,28 @@ import jakarta.ws.rs.core.Response;
 @Path("/api/users")
 public class UserController {
 
+    private static final String LDAP_SERVER_HOST = "localhost";
+    private static final int LDAP_SERVER_PORT = 3389;
+    private static final String LDAP_BIND_DN = "cn=Directory Manager";
+    private static final String LDAP_BIND_PASSWORD = "ldap@803101";
     @Inject
-    UserService userService;
+    UserRepository userRepository;
 
     @POST
     @Path("/register")
-    public RestResponse<String> register(@Valid UserEntity user) {
+    public RestResponse<String> register(UserEntity user) {
 
-        Boolean created = userService.add(user);
+        Optional<UserEntity> u = userRepository.getUserByEmail(user.getEmail());
 
-        if (created) {
-            return ResponseBuilder.ok("User registration successful")
-                    .build();
-        } else {
+        if (u.isPresent()) {
             return ResponseBuilder.ok("Email already taken!")
                     .status(Response.Status.BAD_REQUEST).build();
+
+        } else {
+
+            userRepository.create(user);
+            return ResponseBuilder.ok("User registration successful")
+                    .build();
         }
 
     }
@@ -40,7 +51,8 @@ public class UserController {
     @Path("/login")
     public RestResponse<String> login(UserEntity user) {
 
-        if (userService.authenticate(user)) {
+        if (userRepository.authenticateByEmailAndPassword(user.getEmail(),
+                user.getPassword())) {
 
             return ResponseBuilder.ok("User authenticated")
                     .build();
@@ -58,7 +70,7 @@ public class UserController {
 
         user.setId(id);
 
-        if (userService.update(user)) {
+        if (userRepository.update(user)) {
 
             return ResponseBuilder.ok("User has been updated")
                     .build();
@@ -74,7 +86,8 @@ public class UserController {
     @Path("/delete/{id}")
     public RestResponse<String> Delete(@PathParam("id") Long id) {
 
-        if (userService.delete(id)) {
+        if (userRepository.getById(id).isEmpty()) {
+            userRepository.delete(id);
 
             return ResponseBuilder.ok("User has been deleted")
                     .build();
