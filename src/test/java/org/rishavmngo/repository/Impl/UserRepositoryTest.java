@@ -2,6 +2,7 @@ package org.rishavmngo.repository.Impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
@@ -17,9 +18,6 @@ import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 public class UserRepositoryTest {
-	static {
-		System.setProperty("quarkus.test.mode", "test");
-	}
 
 	// @Inject
 	UserRepository underTest;
@@ -46,6 +44,18 @@ public class UserRepositoryTest {
 	}
 
 	@Test
+	void testRegisterFailed() {
+
+		UserEntity user = UserEntity.builder().id(1L).firstName("rishav").lastName("raj").email("rishavmngo@gmail.com")
+				.password("1234567890").build();
+
+		UserEntity u = underTest.create(user);
+		UserEntity u1 = underTest.create(user);
+
+		assertNull(u1);
+	}
+
+	@Test
 	void testAuthentication() {
 
 		Boolean authenticate = underTest.authenticateByEmailAndPassword("john.doe@gmail.com", "1234567890");
@@ -64,7 +74,7 @@ public class UserRepositoryTest {
 	}
 
 	@Test
-	void testDeletionOfUser() {
+	void testGetByEmail() {
 
 		UserEntity user = UserEntity.builder().id(1L).firstName("rishav").lastName("raj").email("rishavmngo@gmail.com")
 				.password("1234567890").build();
@@ -73,6 +83,85 @@ public class UserRepositoryTest {
 
 		Optional<UserEntity> u1 = underTest.getUserByEmail(user.getEmail());
 
-		// assertEquals(u.getEmail(), user.getEmail());
+		assertTrue(u1.isPresent());
 	}
+
+	@Test
+	void testGetByEmailIfNotPresent() {
+
+		UserEntity user = UserEntity.builder().id(1L).firstName("rishav").lastName("raj").email("rishavmngo@gmail.com")
+				.password("1234567890").build();
+
+		// UserEntity u = underTest.create(user);
+
+		Optional<UserEntity> u1 = underTest.getUserByEmail(user.getEmail());
+
+		assertFalse(u1.isPresent());
+	}
+
+	@Test
+	void testUpdationOfUser() {
+
+		UserEntity user = UserEntity.builder().id(1L).firstName("rishav").lastName("raj").email("rishavmngo@gmail.com")
+				.password("1234567890").build();
+
+		UserEntity u = underTest.create(user);
+		Optional<UserEntity> u1 = underTest.getUserByEmail(user.getEmail());
+
+		UserEntity userUpdated = UserEntity.builder().id(1L).firstName("newFirstname").lastName("newLastname")
+				.email("rishavmngo@gmail.com").build();
+		userUpdated.setId(u1.get().getId());
+
+		Boolean updated = underTest.update(userUpdated);
+
+		assertTrue(updated);
+
+	}
+
+	@Test
+	void testUpdationOfUserFailWhenNotProvidedCorrectId() {
+
+		UserEntity user = UserEntity.builder().id(1L).firstName("rishav").lastName("raj").email("rishavmngo@gmail.com")
+				.password("1234567890").build();
+
+		UserEntity u = underTest.create(user);
+		Optional<UserEntity> u1 = underTest.getUserByEmail(user.getEmail());
+
+		UserEntity userUpdated = UserEntity.builder().id(1L).firstName("newFirstname").lastName("newLastname")
+				.email("rishavmngo@gmail.com").build();
+
+		// userUpdated.setId(u1.get().getId());
+
+		Boolean updated = underTest.update(userUpdated);
+
+		assertFalse(updated);
+
+	}
+
+	@Test
+	void testDeleteionOfUser() {
+
+		UserEntity user = UserEntity.builder().id(1L).firstName("rishav").lastName("raj").email("rishavmngo@gmail.com")
+				.password("1234567890").build();
+
+		UserEntity u = underTest.create(user);
+		Boolean deleted = underTest.delete(u.getId());
+
+		assertTrue(deleted);
+
+	}
+
+	@Test
+	void testDeleteionOfUserFailCase() {
+
+		UserEntity user = UserEntity.builder().id(1L).firstName("rishav").lastName("raj").email("rishavmngo@gmail.com")
+				.password("1234567890").build();
+
+		UserEntity u = underTest.create(user);
+		Boolean deleted = underTest.delete(1232L);
+
+		assertFalse(deleted);
+
+	}
+
 }

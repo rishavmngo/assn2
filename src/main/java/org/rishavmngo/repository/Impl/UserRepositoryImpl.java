@@ -10,7 +10,6 @@ import org.rishavmngo.repository.UserRepository;
 import com.unboundid.ldap.sdk.Attribute;
 import com.unboundid.ldap.sdk.Entry;
 import com.unboundid.ldap.sdk.LDAPConnection;
-import com.unboundid.ldap.sdk.LDAPException;
 import com.unboundid.ldap.sdk.Modification;
 import com.unboundid.ldap.sdk.ModificationType;
 import com.unboundid.ldap.sdk.SearchRequest;
@@ -63,10 +62,10 @@ public class UserRepositoryImpl implements UserRepository {
 				user.setFirstName(entry.getAttributeValue("givenName"));
 				return Optional.of(user);
 			} else {
-				return Optional.ofNullable(null);
+				throw new Exception("user not found");
 			}
 
-		} catch (LDAPException e) {
+		} catch (Exception e) {
 			return Optional.ofNullable(null);
 		} finally {
 			ldapManager.closeConnection();
@@ -95,8 +94,9 @@ public class UserRepositoryImpl implements UserRepository {
 			ldapConnection.add(entry);
 
 			System.out.println("User created");
-		} catch (LDAPException e) {
+		} catch (Exception e) {
 			System.out.println(e);
+			return null;
 		} finally {
 			ldapManager.closeConnection();
 		}
@@ -106,15 +106,14 @@ public class UserRepositoryImpl implements UserRepository {
 	@Override
 	public Boolean delete(Long id) {
 
-		Optional<UserEntity> user = getById(id);
-
-		if (user.isEmpty()) {
-			return false;
-		}
-
-		UserEntity deletedUser = user.get();
-
 		try {
+			Optional<UserEntity> user = getById(id);
+
+			if (user.isEmpty()) {
+				throw new Exception("user not found while deleting");
+			}
+
+			UserEntity deletedUser = user.get();
 			LDAPConnection ldapConnection = ldapManager.getConnection();
 			String dn = "mail= " + deletedUser.getEmail() +
 					",ou=users,dc=user_crud,dc=com";
@@ -122,7 +121,7 @@ public class UserRepositoryImpl implements UserRepository {
 			ldapConnection.delete(dn);
 
 			return true;
-		} catch (LDAPException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		} finally {
@@ -158,11 +157,10 @@ public class UserRepositoryImpl implements UserRepository {
 				user.setPassword(entry.getAttributeValue("userPassword"));
 				return Optional.of((user));
 			} else {
-
-				return Optional.ofNullable(null);
+				throw new Exception("User not found!");
 			}
 
-		} catch (LDAPException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return Optional.ofNullable(null);
 		} finally {
@@ -180,7 +178,7 @@ public class UserRepositoryImpl implements UserRepository {
 			ldapConnection.bind(userDn, password);
 			System.out.println("authenicated");
 			return true;
-		} catch (LDAPException e) {
+		} catch (Exception e) {
 			return false;
 		} finally {
 			ldapManager.closeConnection();
@@ -190,15 +188,15 @@ public class UserRepositoryImpl implements UserRepository {
 	@Override
 	public Boolean update(UserEntity user) {
 
-		Optional<UserEntity> usera = getById(user.getId());
-		if (usera.isEmpty()) {
-			return false;
-		}
-
-		UserEntity userc = usera.get();
-
-		user.setEmail(userc.getEmail());
 		try {
+			Optional<UserEntity> usera = getById(user.getId());
+			if (usera.isEmpty()) {
+				throw new Exception("user not found while updating");
+			}
+
+			UserEntity userc = usera.get();
+
+			user.setEmail(userc.getEmail());
 			LDAPConnection ldapConnection = ldapManager.getConnection();
 			String dn = "mail= " + user.getEmail().toString() +
 					",ou=users,dc=user_crud,dc=com";
@@ -208,7 +206,7 @@ public class UserRepositoryImpl implements UserRepository {
 					user.getLastName());
 			ldapConnection.modify(dn, modification1, modification2);
 			return true;
-		} catch (LDAPException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 

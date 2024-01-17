@@ -28,8 +28,7 @@ public class TestLdapManager extends LdapManager {
 	// @ConfigProperty(name = "ldap.bind.password")
 	// String bind_password;
 
-	@Override
-	public LDAPConnection getConnection() {
+	public TestLdapManager() {
 
 		String bind_dn = "cn=Directory Manager";
 		String bind_password = "ldap@803101";
@@ -45,11 +44,15 @@ public class TestLdapManager extends LdapManager {
 
 			this.ldapConnection = inMemoryServer.getConnection();
 			System.out.println("In-memory Connection created");
-			return this.ldapConnection;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
 		}
+	}
+
+	@Override
+	public LDAPConnection getConnection() {
+
+		return this.ldapConnection;
 	}
 
 	@Override
