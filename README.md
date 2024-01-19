@@ -20,4 +20,4 @@
 1. UnboundId Inmemory ldap server for testing
 2. Mockito for mocking
 
-`Total 20 unit test written with 95% coverage`
+`Total 18 unit test written with 94% coverage`
